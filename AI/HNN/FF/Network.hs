@@ -33,6 +33,7 @@ module AI.HNN.FF.Network (Network, Vec, createNetwork, computeNetworkWith, compu
 
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as U
+import qualified Quantum.Base as Q
 
 import System.Random.MWC
 
@@ -50,8 +51,8 @@ data Network a = Network
 --   the net will have n1 neurons on the first layer, n2 neurons on the second, and so on
 -- 
 -- > createNetwork n l
-createNetwork :: (Variate a, U.Unbox a) => Int -> [Int] -> IO (Network a)
-createNetwork nI as = withSystemRandom . asGenST $ \gen -> do
+qCreateNetwork :: (Variate a, U.Unbox a) => Int -> [Int] -> IO (Network a)
+qCreateNetwork nI as = withSystemRandom . asGenST $ \gen -> do
   (vs, ts) <- go nI as V.empty V.empty gen
   return $! Network vs ts nI as
   where go _  []         ms ts _ = return $! (ms, ts)
@@ -64,8 +65,8 @@ createNetwork nI as = withSystemRandom . asGenST $ \gen -> do
         randomMatrix n m g = uniformVector g (n*m)
 
 -- Helper function that computes the output of a given layer
-computeLayerWith :: (U.Unbox a, Num a) => Vec a -> (Matrix a, Vec a, a -> a) -> Vec a
-computeLayerWith input (m, thresholds, f) = U.map f $! U.zipWith (-) (m `apply` input) thresholds 
+qComputeLayerWith :: (U.Unbox a, Num a) => Vec a -> (Matrix a, Vec a, a -> a) -> Vec a
+qComputeLayerWith input (m, thresholds, f) = U.map f $! U.zipWith (-) (m `apply` input) thresholds 
 {-# INLINE computeLayerWith #-}
 
 -- | Computes the output of the given 'Network' assuming all neurons have the given function
@@ -74,8 +75,8 @@ computeLayerWith input (m, thresholds, f) = U.map f $! U.zipWith (-) (m `apply` 
 -- Example:
 -- 
 -- > computeNetworkWith n sigmoid (U.fromList [0.5, 0.5])
-computeNetworkWith :: (U.Unbox a, Num a) => Network a -> (a -> a) -> Vec a -> Vec a
-computeNetworkWith (Network{..}) activation input = V.foldl' computeLayerWith input $ V.zip3 matrices thresholds (V.replicate (length arch) activation)
+qComputeNetworkWith :: (U.Unbox a, Num a) => Network a -> (a -> a) -> Vec a -> Vec a
+qComputeNetworkWith (Network{..}) activation input = V.foldl' qComputeLayerWith input $ V.zip3 matrices thresholds (V.replicate (length arch) activation)
 {-# INLINE computeNetworkWith #-}
 
 -- | Computes the output of the given 'Network', just like 'computeNetworkWith', but accepting
@@ -84,8 +85,8 @@ computeNetworkWith (Network{..}) activation input = V.foldl' computeLayerWith in
 -- > computeNetworkWith n f input == computeNetworkWithS n (repeat f) input
 -- 
 -- (or, to be more accurate, we can replace @repeat f@ by a list containing a copy of @f@ per layer)
-computeNetworkWithS :: (U.Unbox a, Num a) => Network a -> [a -> a] -> Vec a -> Vec a
-computeNetworkWithS (Network{..}) activations input = V.foldl' computeLayerWith input $ V.zip3 matrices thresholds (V.fromList activations)
+qComputeNetworkWithS :: (U.Unbox a, Num a) => Network a -> [a -> a] -> Vec a -> Vec a
+qComputeNetworkWithS (Network{..}) activations input = V.foldl' qComputeLayerWith input $ V.zip3 matrices thresholds (V.fromList activations)
 
 sigmoid :: Floating a => a -> a
 sigmoid !x = 1 / (1 + exp (-x))
