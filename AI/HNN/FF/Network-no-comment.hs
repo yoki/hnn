@@ -2,14 +2,12 @@
 
 module Quantum.AI.Neural.Network (Network, Vec, qCreateNetwork, qComputeNetworkWith, qComputeNetworkWithS, qSigmoid, tanh) where
 
-import qualified Quantum.Base as Q
-import qualified BlackHole.Base as BH
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as U
 
-import System.Random.MWC
-
-import AI.HNN.Internal.Matrix
+import Quantum.Base
+import BlackHole.Base
+import AI.Neural.Internal.Matrix
 
 data Network a = Network
                  { matrices   :: !(V.Vector (Matrix a))

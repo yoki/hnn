@@ -33,11 +33,11 @@ module AI.HNN.FF.Network (Network, Vec, createNetwork, computeNetworkWith, compu
 
 import qualified Data.Vector         as V
 import qualified Data.Vector.Unboxed as U
-import qualified Quantum.Base as Q
 
 import System.Random.MWC
-
-import AI.HNN.Internal.Matrix
+import Quantum.Base
+import BlackHole.Base`
+import AI.Neural.Internal.Matrix
 
 -- | Our feed-forward neural network type
 data Network a = Network
