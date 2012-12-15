@@ -1,5 +1,3 @@
-{-# LANGUAGE BangPatterns, ScopedTypeVariables, RecordWildCards #-}
-
 module Quantum.AI.Neural.Network (Network, Vec, qCreateNetwork, qComputeNetworkWith, qComputeNetworkWithS, qSigmoid, tanh) where
 
 import qualified Data.Vector         as V
@@ -31,15 +29,12 @@ qCreateNetwork nI as = withSystemRandom . asGenST $ \gen -> do
 
 qComputeLayerWith :: (U.Unbox a, Num a) => Vec a -> (Matrix a, Vec a, a -> a) -> Vec a
 qComputeLayerWith input (m, thresholds, f) = U.map f $! U.zipWith (-) (m `apply` input) thresholds 
-{-# INLINE qComputeLayerWith #-}
 
 qComputeNetworkWith :: (U.Unbox a, Num a) => Network a -> (a -> a) -> Vec a -> Vec a
 qComputeNetworkWith (Network{..}) activation input = V.foldl' qComputeLayerWith input $ V.zip3 matrices thresholds (V.replicate (length arch) activation)
-{-# INLINE qComputeNetworkWith #-}
 
 qComputeNetworkWithS :: (U.Unbox a, Num a) => Network a -> [a -> a] -> Vec a -> Vec a
 qComputeNetworkWithS (Network{..}) activations input = V.foldl' qComputeLayerWith input $ V.zip3 matrices thresholds (V.fromList activations)
 
 sigmoid :: Floating a => a -> a
 sigmoid !x = 1 / (1 + exp (-x))
-{-# INLINE qSigmoid #-}
